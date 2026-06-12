@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meeting Script — Defect Inspection Digital Twin</title>
+<style>
+  :root{--ink:#1d2330; --muted:#5b6472; --line:#e2e6ee; --accent:#3b6fd4;}
+  *{box-sizing:border-box;}
+  body{font-family:"Helvetica Neue",Arial,sans-serif; color:var(--ink); line-height:1.6;
+       max-width:820px; margin:0 auto; padding:40px 26px 90px;}
+  h1{font-size:1.9rem; margin:0 0 4px;}
+  .sub{color:var(--muted); margin-bottom:8px;}
+  h2{font-size:1.25rem; margin:2em 0 .3em; padding:6px 12px; background:#eef3fc;
+     border-left:5px solid var(--accent); border-radius:0 6px 6px 0;}
+  .time{float:right; font-size:.8rem; color:var(--muted); font-weight:400;}
+  .say{background:#f7f9fc; border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin:.6em 0;}
+  .say:before{content:"🗣  Say:"; display:block; font-size:.75rem; color:var(--accent); font-weight:700; margin-bottom:4px; letter-spacing:.04em;}
+  .do{font-size:.9rem; color:var(--muted); margin:.4em 0;}
+  .do:before{content:"▶ Do: "; color:#c0392b; font-weight:700;}
+  ul{margin:.4em 0 .8em;}
+  li{margin:.2em 0;}
+  code{font-family:"SF Mono",Menlo,Consolas,monospace; background:#eef1f6; padding:.08em .35em; border-radius:4px; font-size:.85em;}
+  .qa{border-left:4px solid #2ecc71; background:#f3fbf6; padding:8px 14px; margin:.6em 0; border-radius:0 6px 6px 0;}
+  .qa b{color:#1d6b3f;}
+  .tip{background:#fff7e6; border:1px solid #f0d9a0; border-radius:8px; padding:10px 14px; font-size:.92rem;}
+  hr{border:none; border-top:1px solid var(--line); margin:2em 0;}
+</style>
+</head>
+<body>
+
+<h1>Meeting Script — what to say</h1>
+<div class="sub">Defect Inspection Digital Twin · ~8–10 minute walkthrough · pairs with the slide deck</div>
+
+<div class="tip"><strong>Before you start:</strong> have the GitHub repo open, and
+if you can, the Streamlit dashboard running (<code>streamlit run
+stage2_decision/dashboard.py</code>) for a live moment. Speak slowly; the script
+below is a guide, not a word-for-word read.</div>
+
+<h2>1. Opening — the problem <span class="time">~1 min</span></h2>
+<div class="say">"In circular manufacturing the goal is to keep parts and materials
+in use instead of throwing them away. But the hard part is the decision: when a
+used part comes back, should we <em>reuse</em> it, <em>repair</em> it, or
+<em>recycle</em> it? Today that's done manually — slow and subjective. I built a
+system that automates exactly that decision, end to end, in simulation."</div>
+<ul>
+  <li>Keep it concrete: "a worn part comes in, the system decides what to do with it."</li>
+  <li>Land the three words early: <strong>reuse / repair / recycle</strong>.</li>
+</ul>
+
+<h2>2. The big picture <span class="time">~1 min</span></h2>
+<div class="do">Show the pipeline diagram slide.</div>
+<div class="say">"It's one pipeline with four parts. A camera gives an image. A
+computer-vision model finds the defects. A grading step turns those defects into a
+decision with a confidence. And a 'digital twin' keeps a live record of every part
+we've seen. I built it in three layers so each one runs on its own."</div>
+<ul>
+  <li>Point at each box as you name it.</li>
+  <li>"Three layers" = Stage 1 vision, Stage 2 decision, Stage 3 robotics.</li>
+</ul>
+
+<h2>3. Stage 1 — seeing the defect <span class="time">~2 min</span></h2>
+<div class="do">Show the overlay slide (original | heatmap | overlay).</div>
+<div class="say">"Stage 1 is the computer vision. I used a pretrained PyTorch model
+— a ResNet — and fine-tuned it on surface-defect images. For each part it gives
+three things: the defect type, a heatmap showing <em>where</em> the defect is, and
+a confidence. The heatmap on the right is from a method called Grad-CAM — you can
+see it lights up exactly on the crack."</div>
+<ul>
+  <li>If asked why not draw exact outlines: "Grad-CAM only needs simple labels, not
+  pixel-by-pixel annotation — much cheaper, and enough to locate the defect."</li>
+  <li>Mention the number: "about 88% accuracy on the demo set, trained in a minute."</li>
+</ul>
+
+<h2>4. Stage 2 — making the decision <span class="time">~2 min</span></h2>
+<div class="do">Show the grading-bands slide, then the decision-distribution slide.</div>
+<div class="say">"Stage 2 turns the defect into a decision. I compute a condition
+score from 0 to 100 from the defect type and how much of the surface it covers. A
+crack is structural, so it scores low and gets RECYCLE; a light scratch is
+cosmetic, scores in the middle, and gets REPAIR; a clean part scores high and gets
+REUSE. I kept this as a clear rule on purpose, so every decision can be explained
+and audited — not a black box."</div>
+<div class="say">"Every part is then saved to the digital twin with its score,
+decision and timestamp, and this dashboard shows the running statistics — including
+a 'recovery rate', the share of parts we keep in service."</div>
+<div class="do">If live: open the dashboard, pick a sample, show the decision badge update.</div>
+
+<h2>5. Stage 3 — the robotics layer <span class="time">~1.5 min</span></h2>
+<div class="do">Show the ROS 2 node-graph slide.</div>
+<div class="say">"Stage 3 wraps it in ROS 2, the standard robotics framework. Each
+job is its own node — camera, inspection, decision, digital twin — passing
+messages down the line. There's a small Gazebo scene of the inspection cell, a
+table with a camera over it, and RViz shows the live result with a colored marker:
+green for reuse, amber for repair, red for recycle."</div>
+<ul>
+  <li>Be honest: "ROS and Gazebo run on Linux, so I package it in Docker; I verified
+  the structure here and it runs end-to-end in the container."</li>
+  <li>Emphasize reuse: "the nodes use the exact same model and grader — nothing is
+  duplicated."</li>
+</ul>
+
+<h2>6. Why these choices <span class="time">~1 min</span></h2>
+<div class="say">"Every tool was chosen to be lightweight, free, and reproducible.
+Pretrained models so training is fast. Grad-CAM so I don't need expensive labels.
+A transparent grading rule so decisions are explainable. ROS 2 because it's the
+industry standard and keeps each part swappable. No paid services anywhere."</div>
+
+<h2>7. Closing <span class="time">~30 sec</span></h2>
+<div class="say">"So that's a complete, runnable demonstration that vision and ML
+can automate the reuse-repair-recycle decision for circular manufacturing — built
+in three independent layers, fully reproducible, and all open source. Happy to
+dive into any stage."</div>
+
+<hr>
+<h2 style="background:#eafaf1;border-color:#2ecc71">Likely questions &amp; answers</h2>
+<div class="qa"><b>Q: Is the accuracy real?</b> "The 88% is on a synthetic demo set
+that proves the pipeline works offline. For real numbers I'd train on NEU-DET or
+the casting dataset — the code already supports both."</div>
+<div class="qa"><b>Q: Why a rule for grading, not machine learning?</b> "Inspection
+decisions have to be auditable. A rule is explainable and tunable. I can add a
+learned grader later once I have labelled condition data, and compare."</div>
+<div class="qa"><b>Q: Does it run on real hardware?</b> "It's simulation-only by
+design — no hardware needed. The ROS 2 structure is exactly what a real cell would
+use, so moving to a real camera and arm later is a small step."</div>
+<div class="qa"><b>Q: Why Grad-CAM instead of segmentation?</b> "Segmentation needs
+pixel masks the public datasets don't have. Grad-CAM needs only image labels and
+still locates the defect. The interface is the same, so I can upgrade later."</div>
+<div class="qa"><b>Q: How long did the model take to train?</b> "About a minute on
+CPU for the demo; a few minutes on a GPU for a real dataset — it's deliberately
+small and fast."</div>
+
+<div class="tip" style="margin-top:24px"><strong>Timing:</strong> the whole thing
+is ~8–10 minutes. If you're short on time, cut Stage 3 detail and the live demo;
+keep the problem, Stage 1 overlay, and the decision bands — those three land the
+story.</div>
+
+</body>
+</html>
