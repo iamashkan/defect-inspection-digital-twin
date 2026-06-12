@@ -73,13 +73,37 @@ its condition score, decision, heatmap path and timestamp.
   (REUSE + REPAIR share), a decision-mix bar chart, and the recent record table,
   all updating as parts are inspected.
 
-## Stage 3 — ROS 2 / Gazebo / RViz (planned)
+## Stage 3 — ROS 2 / Gazebo / RViz
 
-- Separate ROS 2 Humble nodes: **camera** (publishes frames), **inspection**
-  (runs the Stage 1 CV+ML), **decision** (Stage 2 grading), **digital-twin
-  state** (maintains/serves part records).
-- A minimal **Gazebo** inspection cell: a fixed camera over a table with a part.
-- An **RViz** config visualizing the incoming image, the defect overlay, and the
-  decision as an annotated marker.
-- Demo: launch the cell, a part appears under the camera, and the decision +
-  heatmap stream through the node graph into RViz in real time.
+After `docker run --rm -it defect-twin-ros2` (or the native `ros2 launch …`):
+
+**Terminal — decisions streaming through the node graph:**
+```
+[camera_node] published part image: crack_0001.jpg
+[inspection_node] detected crack (conf 0.97, area 21.1%) on crack_0001.jpg
+[decision_node]  crack_0001.jpg: crack → RECYCLE (condition 22/100, conf 0.79)
+[digital_twin_node] recorded PART-9C0D1E2F (crack_0001.jpg) → RECYCLE | twin now
+                    holds 7 parts, recovery rate 57%
+```
+
+**RViz** (native, `use_rviz:=true`):
+- the live `original | heatmap | overlay` image on `/inspection/overlay`,
+- a colored text marker on `/inspection/decision_marker` — **green REUSE / amber
+  REPAIR / red RECYCLE** — plus a running-statistics line (parts inspected,
+  decision mix, recovery rate).
+
+**Gazebo** (`use_gazebo:=true`): the minimal inspection cell — a table with a
+recovered part and a fixed downward camera.
+
+**Live topic inspection:**
+```
+ros2 topic echo /inspection/result      # full graded InspectionResult per part
+ros2 topic hz   /inspection/overlay      # overlay image stream rate
+ros2 node list                           # camera / inspection / decision / digital_twin
+```
+
+**What "good" looks like:** every part published by `camera_node` flows through
+detection → grading → twin record, the same REUSE/REPAIR/RECYCLE decisions as the
+Stage 2 pipeline appear in the terminal and as colored RViz markers, and
+`outputs/digital_twin.jsonl` grows by one record per part — all reusing the exact
+Stage 1 model and Stage 2 grader (no duplicated logic).

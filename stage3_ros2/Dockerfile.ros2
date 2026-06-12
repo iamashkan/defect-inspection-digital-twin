@@ -1,0 +1,52 @@
+# ROS 2 Humble + Gazebo Classic + RViz environment for Stage 3.
+#
+# Build (from the repo root):
+#   docker build -f stage3_ros2/Dockerfile.ros2 -t defect-twin-ros2 .
+#
+# Run the headless node graph (no GUI needed):
+#   docker run --rm -it defect-twin-ros2
+# The default command trains a tiny Stage 1 model, then launches the four nodes
+# (use_rviz:=false, use_gazebo:=false) so the camera→inspection→decision→twin
+# pipeline runs end-to-end and prints decisions.
+#
+# For RViz / Gazebo GUIs, run on a native Ubuntu 22.04 + ROS 2 Humble machine
+# (GUI forwarding from Docker is fiddly, especially on macOS). See the Stage 3
+# README for the native commands.
+
+FROM osrf/ros:humble-desktop-full
+
+SHELL ["/bin/bash", "-c"]
+
+# ROS bits used by the nodes + Gazebo bridge, plus pip.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        python3-pip \
+        ros-humble-cv-bridge \
+        ros-humble-gazebo-ros-pkgs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace/repo
+COPY . /workspace/repo
+
+# Install the Stage 1/2 Python packages (CPU torch) so the ROS nodes can import
+# stage1_vision / stage2_decision without any PYTHONPATH juggling.
+RUN pip install --no-cache-dir -e /workspace/repo
+
+# Build the ROS 2 workspace (interfaces + nodes).
+RUN source /opt/ros/humble/setup.bash \
+    && cd /workspace/repo/stage3_ros2/ros2_ws \
+    && colcon build
+
+ENV MPLBACKEND=Agg
+
+# Default: a self-contained headless demo (train tiny model → run the graph).
+CMD ["bash", "-lc", "\
+    source /opt/ros/humble/setup.bash && \
+    source /workspace/repo/stage3_ros2/ros2_ws/install/setup.bash && \
+    cd /workspace/repo && \
+    python3 -m stage1_vision.dataset --make-synthetic --per-class 20 && \
+    python3 -m stage1_vision.train --data data/synthetic --epochs 2 --device cpu && \
+    ros2 launch defect_inspection inspection_cell.launch.py \
+        repo_root:=/workspace/repo \
+        weights:=/workspace/repo/outputs/best_model.pt \
+        image_dir:=/workspace/repo/data/synthetic/test \
+        use_rviz:=false use_gazebo:=false"]

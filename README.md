@@ -56,7 +56,7 @@ grow incrementally.
 |------|---------------|-------|--------|
 | **1** | PyTorch surface-defect model: defect **class + localization mask + confidence**, accuracy metrics, overlay visualizations. Trains on a free public dataset in Colab. | Python, PyTorch, OpenCV | ✅ Implemented |
 | **2** | Grading + decision module (area% / type / severity → REUSE/REPAIR/RECYCLE + confidence) and a digital-twin data layer. Streamlit dashboard. | + Streamlit | ✅ Implemented |
-| **3** | ROS 2 (Humble) nodes — camera / inspection / decision / digital-twin — a minimal Gazebo inspection cell and an RViz config. | + ROS 2, Gazebo, RViz | 🔜 Scaffolded |
+| **3** | ROS 2 (Humble) nodes — camera / inspection / decision / digital-twin — a minimal Gazebo inspection cell and an RViz config. | + ROS 2, Gazebo, RViz | ✅ Implemented |
 
 ---
 
@@ -83,6 +83,12 @@ defect-inspection-digital-twin/
 │   ├── pipeline.py            ← inference → grade → record (headless CLI)
 │   ├── dashboard.py           ← Streamlit dashboard (Inspect + Statistics)
 │   └── README.md              ← Stage 2 quickstart
+├── stage3_ros2/               ← STAGE 3 (implemented)
+│   ├── Dockerfile.ros2        ← ROS 2 Humble + Gazebo + RViz environment
+│   ├── README.md              ← Stage 3 quickstart (Docker + native)
+│   └── ros2_ws/src/
+│       ├── defect_inspection_interfaces/  ← custom msgs (Detection/Inspection)
+│       └── defect_inspection/             ← 4 nodes + launch + world + rviz
 ├── notebooks/
 │   └── colab_stage1.ipynb     ← one-click Colab training/inference
 ├── data/                      ← datasets land here (git-ignored)
@@ -136,6 +142,19 @@ streamlit run stage2_decision/dashboard.py
 
 See **[stage2_decision/README.md](stage2_decision/README.md)** for the decision
 logic and the digital-twin record format.
+
+## Quick start (Stage 3, ROS 2 / Gazebo / RViz)
+
+ROS 2 + Gazebo run on **Linux**, so the easiest path is the headless Docker demo
+(runs the full camera → inspection → decision → digital-twin node graph):
+
+```bash
+docker build -f stage3_ros2/Dockerfile.ros2 -t defect-twin-ros2 .
+docker run --rm -it defect-twin-ros2
+```
+
+For the full RViz + Gazebo GUI on a native Ubuntu 22.04 + ROS 2 Humble machine,
+see **[stage3_ros2/README.md](stage3_ros2/README.md)**.
 
 ## Run it in Google Colab (free GPU)
 

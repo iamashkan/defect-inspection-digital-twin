@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>defect_inspection_interfaces</name>
+  <version>0.2.0</version>
+  <description>
+    Custom messages for the Defect Inspection Digital Twin: DetectionResult
+    (per-frame defect detection) and InspectionResult (graded recovery decision).
+  </description>
+  <maintainer email="ashkaan.aghamoali@gmail.com">Ashkan Aghamoali</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Message generation -->
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <!-- std_msgs/Header used by both messages -->
+  <depend>std_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

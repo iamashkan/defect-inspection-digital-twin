@@ -1,0 +1,32 @@
+# Makes the Stage 1 (stage1_vision) and Stage 2 (stage2_decision) packages
+# importable via `pip install -e .`. The Stage 3 ROS 2 nodes rely on this so they
+# can reuse the trained model + grading + digital-twin code directly.
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "defect-inspection-digital-twin"
+version = "0.2.0"
+description = "Simulation-only surface-defect inspection + grading + digital twin for circular manufacturing."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+
+# Runtime deps for Stages 1 & 2 (kept in sync with requirements.txt). ROS 2 deps
+# for Stage 3 come from apt inside the ROS environment, not pip.
+dependencies = [
+    "torch>=2.0",
+    "torchvision>=0.15",
+    "numpy>=1.24",
+    "opencv-python>=4.8",
+    "pillow>=9.5",
+    "matplotlib>=3.7",
+    "scikit-learn>=1.3",
+    "tqdm>=4.65",
+    "streamlit>=1.30",
+    "pandas>=2.0",
+]
+
+[tool.setuptools]
+packages = ["stage1_vision", "stage2_decision"]

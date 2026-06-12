@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>defect_inspection</name>
+  <version>0.2.0</version>
+  <description>
+    Stage 3 of the Defect Inspection Digital Twin: ROS 2 Humble nodes
+    (camera, inspection, decision, digital-twin), a Gazebo inspection-cell world,
+    and an RViz config. Reuses the Stage 1 CV model and Stage 2 grading/twin code.
+  </description>
+  <maintainer email="ashkaan.aghamoali@gmail.com">Ashkan Aghamoali</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>defect_inspection_interfaces</exec_depend>
+
+  <!-- Optional, only needed when launching with use_gazebo:=true -->
+  <exec_depend>gazebo_ros</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
