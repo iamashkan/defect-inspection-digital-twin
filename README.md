@@ -55,7 +55,7 @@ grow incrementally.
 | Stage | What it adds | Stack | Status |
 |------|---------------|-------|--------|
 | **1** | PyTorch surface-defect model: defect **class + localization mask + confidence**, accuracy metrics, overlay visualizations. Trains on a free public dataset in Colab. | Python, PyTorch, OpenCV | ✅ Implemented |
-| **2** | Grading + decision module (area% / type / count / severity → REUSE/REPAIR/RECYCLE + confidence) and a digital-twin data layer. Streamlit dashboard. | + Streamlit | 🔜 Scaffolded |
+| **2** | Grading + decision module (area% / type / severity → REUSE/REPAIR/RECYCLE + confidence) and a digital-twin data layer. Streamlit dashboard. | + Streamlit | ✅ Implemented |
 | **3** | ROS 2 (Humble) nodes — camera / inspection / decision / digital-twin — a minimal Gazebo inspection cell and an RViz config. | + ROS 2, Gazebo, RViz | 🔜 Scaffolded |
 
 ---
@@ -77,6 +77,12 @@ defect-inspection-digital-twin/
 │   ├── gradcam.py             ← minimal dependency-free Grad-CAM
 │   ├── utils.py               ← seeding, metrics, plotting helpers
 │   └── README.md              ← Stage 1 quickstart
+├── stage2_decision/           ← STAGE 2 (implemented)
+│   ├── grading.py             ← features → condition score → REUSE/REPAIR/RECYCLE
+│   ├── digital_twin.py        ← append-only part-record store + statistics
+│   ├── pipeline.py            ← inference → grade → record (headless CLI)
+│   ├── dashboard.py           ← Streamlit dashboard (Inspect + Statistics)
+│   └── README.md              ← Stage 2 quickstart
 ├── notebooks/
 │   └── colab_stage1.ipynb     ← one-click Colab training/inference
 ├── data/                      ← datasets land here (git-ignored)
@@ -113,6 +119,23 @@ python -m stage1_vision.inference \
 Outputs land in `outputs/`: `best_model.pt`, `metrics.json`,
 `confusion_matrix.png`, and per-image overlay PNGs (original | defect heatmap |
 overlay with predicted class + confidence).
+
+## Quick start (Stage 2, grading + digital twin + dashboard)
+
+```bash
+# Headless: run inference, grade every part into REUSE/REPAIR/RECYCLE, and
+# record each one in the digital twin (outputs/digital_twin.jsonl).
+python -m stage2_decision.pipeline \
+    --weights outputs/best_model.pt \
+    --images data/synthetic/test \
+    --out outputs/predictions --reset-twin
+
+# Interactive: the Streamlit dashboard (Inspect + Statistics).
+streamlit run stage2_decision/dashboard.py
+```
+
+See **[stage2_decision/README.md](stage2_decision/README.md)** for the decision
+logic and the digital-twin record format.
 
 ## Run it in Google Colab (free GPU)
 

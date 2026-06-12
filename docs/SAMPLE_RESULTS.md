@@ -44,16 +44,34 @@ actual defect, and clearly higher `defect_area_pct` for defective vs. clean part
 
 ---
 
-## Stage 2 — Grading + recovery decision + digital twin (planned)
+## Stage 2 — Grading + recovery decision + digital twin
 
-- A **decision** per part: `REUSE` / `REPAIR` / `RECYCLE` with a confidence,
-  derived from defect type, count, area% and severity (e.g. small cosmetic
-  scratch → REPAIR; clean → REUSE; crack / large area → RECYCLE).
-- A **digital-twin record** per part: condition score (0–100), defect heatmap,
-  decision, timestamp — appended to a running store (JSON/SQLite).
-- A **Streamlit dashboard** showing the image + heatmap overlay, the decision
-  badge, and running statistics (decision counts, average condition score,
-  throughput) updating as parts are inspected.
+After `python -m stage2_decision.pipeline --images data/synthetic/test --reset-twin`:
+
+**Console (per-part decisions + running stats):**
+```
+[pipeline] grading + recording in digital twin:
+  good_0000.jpg     good       cond= 96.0 → REUSE    (conf 0.85) [PART-1A2B3C4D]
+  scratch_0003.jpg  scratch    cond= 61.0 → REPAIR   (conf 0.71) [PART-5E6F7A8B]
+  crack_0001.jpg    crack      cond= 22.0 → RECYCLE  (conf 0.79) [PART-9C0D1E2F]
+...
+[pipeline] digital-twin stats:
+{ "total_parts": 24, "decision_counts": {"REUSE": 8, "REPAIR": 8, "RECYCLE": 8},
+  "avg_condition_score": 59.7, "recovery_rate_pct": 66.7, ... }
+```
+
+**What "good" looks like:** clean parts → high condition → `REUSE`; cosmetic
+defects (scratch) → mid condition → `REPAIR`; structural defects (crack) → low
+condition → `RECYCLE`. Each part is appended to `outputs/digital_twin.jsonl` with
+its condition score, decision, heatmap path and timestamp.
+
+**Streamlit dashboard** (`streamlit run stage2_decision/dashboard.py`):
+- **Inspect** — pick/upload a part, see the color-coded decision badge, condition
+  score, defect-area %, and the `original | heatmap | overlay` panel; one click
+  records the part in the twin.
+- **Statistics** — parts inspected, average condition score, **recovery rate**
+  (REUSE + REPAIR share), a decision-mix bar chart, and the recent record table,
+  all updating as parts are inspected.
 
 ## Stage 3 — ROS 2 / Gazebo / RViz (planned)
 
