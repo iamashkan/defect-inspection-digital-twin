@@ -13,9 +13,7 @@ decision** — while a **digital twin** keeps a live virtual record of every par
 it sees.
 
 A personal project exploring how vision + ML can automate the triage decisions
-that sit at the heart of the circular economy. Everything runs in **simulation —
-no physical hardware required.**
-
+that sit at the heart of the circular economy. 
 ---
 
 ## Sample result (Stage 1)
