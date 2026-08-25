@@ -27,9 +27,30 @@ three-panel overlay (`original | heatmap | overlay + label`):
 The model localizes the fracture and labels it `crack 100.0% area=21.1%`. Below
 is the row-normalized confusion matrix from a short training run:
 
+> [!WARNING]
+> **Read that 100% as a warning sign, not a result.** It comes from the bundled synthetic
+> dataset (`python -m stage1_vision.dataset --make-synthetic`), which exists so the pipeline
+> runs offline with zero downloads. Synthetic defects are separable in a way real ones are
+> not, and a saturated confidence is what that looks like. These numbers say the plumbing
+> works; they say nothing about detection quality.
+
 ![Confusion matrix](docs/sample_results/confusion_matrix.png)
 
 ---
+
+## Where this sits against the state of the art
+
+Surface-defect detection is the most worked-over task in industrial computer vision, and the
+usual benchmarks are close to saturated: leading methods reach around **99% image-level AUROC
+on MVTec AD**, with segmentation AU-PRO clustered in the 92–97% band. MVTec published
+[**MVTec AD 2**](https://www.mvtec.com/research-teaching/datasets/mvtec-ad-2) precisely
+because differences under one percentage point had stopped being meaningful.
+
+So a ResNet-plus-Grad-CAM classifier is a **baseline**, not a contribution, and this repository
+does not pretend otherwise. What it is actually for is the layer above the model: turning a
+per-image defect call into a *recovery decision* with a confidence and a live per-part record.
+Benchmarked properly it would need to run on MVTec AD 2 or VisA and report against a strong
+baseline such as PatchCore — that comparison is not here yet.
 
 ## Why this project
 
